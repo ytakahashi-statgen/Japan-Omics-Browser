@@ -1,0 +1,52 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h1>{{ title_name }}</h1>
+                {{ html|safe }}
+            </div>
+        </div>
+        <h1>EMS top hit</h1>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped text-center">
+                <thead>
+                <tr>
+                    <th>variant_id_hg38</th>
+                    <th>rsid</th>
+                    <th>tss_distance</th>
+                    <th>eQTL_slope</th>
+                    <th>eQTL_slope_se</th>
+                    <th>eQTL_pip_fm</th>
+                    <th>eQTL_pip_susie</th>
+                    <th>pQTL_slope</th>
+                    <th>pQTL_slope_se</th>
+                    <th>pQTL_pip_fm</th>
+                    <th>pQTL_pip_susie</th>
+                    <th>EMS</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for row in table_data.iterrows() %}
+                    <tr>
+                        <td><a href="{{ url_for('variant', input_value=row[1]['variant_id_hg38']) }}">{{ row[1]['variant_id_hg38'] }} {{ index }}</a></td>
+                        <td>{{ row[1]['rsid'] }}</td>
+                        <td>{{ row[1]['tss_distance'] }}</td>
+                        <td>{{ row[1]['eQTL_slope'] }}</td>
+                        <td>{{ row[1]['eQTL_slope_se'] }}</td>
+                        <td>{{ row[1]['eQTL_pip_fm'] }}</td>
+                        <td>{{ row[1]['eQTL_pip_susie'] }}</td>
+                        <td>{{ row[1]['pQTL_slope'] }}</td>
+                        <td>{{ row[1]['pQTL_slope_se'] }}</td>
+                        <td>{{ row[1]['pQTL_pip_fm'] }}</td>
+                        <td>{{ row[1]['pQTL_pip_susie'] }}</td>
+                        <td>{{ row[1]['EMSv2_Whole_Blood'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

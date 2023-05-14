@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="row">
+    <div class="col-xs-12 col-sm-offset-1 col-sm-10">
+      <div class="page-header">
+    <h1>About This PheWeb</h1>
+</div>
+<p>This site was built with PheWeb (<a href="https://github.com/statgen/pheweb/" , target="_blank">original repository:
+        version 1.3.16</a>, <a href="https://github.com/mkanai/pheweb/tree/phewebjp" ,
+        target="_blank">our repository</a>). All positions are on GRCh37.</p>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">Contact</div>
+    <div class="panel-body">
+        <p>Contact: BioBank Japan Project (biobankjapan@biobankjp.net), Yukinori Okada (yokada@sg.med.osaka-u.ac.jp)</p>
+        <p>Technical inquiry: Masahiro Kanai (mkanai@broadinstitute.org)</p>
+    </div>
+</div>
+
+<div class="thumbnails">
+    <a href="https://biobankjp.org/english/" target="_blank" class="thumbnail">
+        <img src="/static/images/bbj_logo.png" alt="BioBank Japan">
+    </a>
+    <a href="https://www.ims.u-tokyo.ac.jp/imsut/en/" target="_blank" class="thumbnail">
+        <img src="/static/images/imsut_logo.png" alt="IMSUT">
+    </a>
+    <a href="http://www.sg.med.osaka-u.ac.jp/" target="_blank" class="thumbnail">
+        <img src="/static/images/osaka_logo.png" alt="Okada Lab">
+    </a>
+    <a href="https://www.ims.riken.jp/english/" target="_blank" class="thumbnail">
+        <img src="/static/images/riken_ims_logo.png" alt="RIKEN IMS">
+    </a>
+    <a href="https://humandbs.biosciencedbc.jp/en/" target="_blank" class="thumbnail">
+        <img src="/static/images/nbdc_logo.png" alt="NBDC Human Database">
+    </a>
+    <a href="http://jenger.riken.jp/en/" target="_blank" class="thumbnail">
+        <img src="/static/images/jenger_logo.png" alt="Jenger">
+    </a>
+</div>
+
+
+<footer>
+  <div class="text-center">
+    <a href="/">
+      <img id="footer-logo" src="/static/images/phewebjp_logo.svg" alt="PheWeb.jp logo">
+    </a>
+  </div>
+</footer>
+
+
+</body>
+{% endblock %}

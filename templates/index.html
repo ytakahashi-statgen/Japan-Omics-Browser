@@ -1,0 +1,50 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="container">
+    <h1>Japan Omics Browser (JOB) version 0.1</h1>
+    <label for="select-col">Enter a variant position (hg38), rsid, gene ID (ENSG) or gene name</label>
+    <form class="d-flex" method="POST" action="/">
+        <input class="form-control me-2" id="select-col" name="input_value" autocomplete="off" type="text" aria-label="Search" placeholder="Enter a variant position (hg38), rsid, gene ID (ENSG) or gene name">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+    <p>Examples: ENSG00000198879, chr10:7180495:T:C	,chr1:12031153:T:C,rs7329174, HBS1L</p>
+    <div class="bg-light">
+        <p>
+          This website releases various omics-related data such as statistically 
+          fine-mapped mRNA expression quantitative loci (eQTL), protein-QTL (pQTL) 
+          summary statistics from
+          <a href="https://www.nature.com/articles/s41467-022-32276-2" target="_blank"
+            >The Japan COVID-19 Task Force study</a
+          >
+          (JCTF), as well as the
+          <a href="https://www.nature.com/articles/s41467-021-23134-8" target="_blank"
+          >Expression Modifier Scores</a
+          >
+          that predicts the variant’s regulatory effects.
+        </p>
+        <p>
+          Other data, including the activity scores from Massively Parallel Reporter Assay (MPRA) experiments,
+          <a href="https://academic.oup.com/hmg/article/31/11/1806/6464692" target="_blank"
+            >microRNA-QTL summary statistics</a
+          >
+          are planned to be added to this platform.
+        </p>
+        <p>
+          This website is developed in the 
+          <a href="http://www.sg.med.osaka-u.ac.jp/" target="_blank"
+            > Okada lab</a
+          >
+          at The University of Tokyo / Osaka University / RIKEN.<br>
+          Technical Inquiry: Yugo Takahashi [email] <br>
+          Contact: Qingbo Wang [email], Yukinori Okada [email] <br>
+        </p>
+    </div>
+    {% if error_message %}
+    <div class="alert alert-danger" role="alert">
+        {{ error_message }}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
