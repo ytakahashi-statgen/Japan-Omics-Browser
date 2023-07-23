@@ -13,7 +13,17 @@ To use JOB, simply visit : https://optical-hexagon-384504.an.r.appspot.com/
 
 Enter keywords on the search page to navigate to specific pages.
 
+### Dependencies
+- Google App Engine
+- Google Cloud SQL
+- Python3.X
+- Flask
+- Bootstrap5
+- JQuery
+- Bokeh
+
 ### Available omics features
+
 - (Marginal) effect sizes, standard error of the effect sizes, posterior inclusion probability (PIP) from statistical fine-mapping of mRNA expression quantitative loci (eQTL) effect in two tools (SuSiE and FINEMAP)
 - The same features for protein expression quantitative loci (pQTL)
 - PIPs from statistical fine-mapping of UK Biobank phenotype in SuSiE
@@ -23,4 +33,3 @@ Enter keywords on the search page to navigate to specific pages.
 ### Contact
 
 For any inquiries or questions, please contact us at 
-
