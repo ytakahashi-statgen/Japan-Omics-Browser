@@ -29,7 +29,3 @@ Enter keywords on the search page to navigate to specific pages.
 - PIPs from statistical fine-mapping of UK Biobank phenotype in SuSiE
 - Machine learning-based prediction of gene regulatory effect variants for 49 GTEx tissues
 - The allelic effect (log2 fold change) measured by the massively parallel reporter assay (MPRA)
-
-### Contact
-
-For any inquiries or questions, please contact us at Yugo Takahashi [email]
