@@ -1,48 +1,130 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <div class="container">
-        <div class="row justify-content-center">
-                <h1>Genes within 1Mb ({{ title_name }}):</h1>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // ボタンをクリックした時の処理を設定
+      document.getElementById("startIntroBtn").addEventListener("click", function() {
+        // intro.jsを開始する
+        introJs()
+        .setOptions({
+          steps: [
+            {
+              element: "#step1",  
+              intro: "This is the variant page. It displays a list of genes located within the cis-window of the variant, defined by the distance to transcription starting site (TSS) smaller than 1Mb.",
+            },
+            {
+              element: "#step2",  
+              intro: "Displays the variant (chromosome, position, reference allele, and alternative allele in hg38.)",
+            },
+            {
+              element: "#step3",  
+              intro: "Provides links to various databases.",
+            },
+            {
+              element: "#step4",  
+              intro: "Detailed omics information is summarized in a table.",
+            },
+            {
+              element: "#step5",  
+              intro: "Clicking on the ensemble ID of interest leads to the gene page, where further information about cis-variants around the gene is provided.",
+            },
+          ],
+        })
+        .start();
+      });
+    });
+</script>
+    <div id="step1" class="container">
+        <div class="d-flex justify-content-end">
+            <button id="startIntroBtn" class="btn btn-outline-primary">Tutorial</button>
         </div>
-        <div class="table-responsive">
-          <table class="table table-sm table-striped text-center">
+        <div class="row justify-content-center">
+          <h2 id="step2">Genes within 1Mb ({{ title_name }}):</h2>
+          <div id="step3">
+          <p>View on
+            , <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=chr{{ var[0] }}:{{ var[1] }}">UCSC</a>
+            , <a href="https://gtexportal.org/home/snp/chr{{ var[0] }}_{{ var[1] }}_{{ var[2] }}_{{ var[3] }}_b38">GTEx</a>
+            , <a href="https://gnomad.broadinstitute.org/variant/{{ var[0] }}-{{ var[1] }}-{{ var[2] }}-{{ var[3] }}">gnomAD</a>
+          </p>
+            </div>
+        </div>
+        <hr>
+        <div id="step4" class="table-responsive">
+          <table class="table table-sm table-striped text-center" id="target">
               <thead>
                 <tr>
-                  <th>gene_id</th>
-                  <th>gene_name</th>
-                  <th>tss_distance</th>
-                  <th>eQTL_slope</th>
-                  <th>eQTL_slope_se</th>
-                  <th>eQTL_pip_fm</th>
-                  <th>eQTL_pip_susie</th>
-                  <th>pQTL_slope</th>
-                  <th>pQTL_slope_se</th>
-                  <th>pQTL_pip_fm</th>
-                  <th>pQTL_pip_susie</th>
-                  <th>EMS</th>
+                  <th>
+                      <div style="display: flex; align-items: center; justify-content: center;">
+                          <span style="margin-right: 5px;">Gene ID</span>
+                          <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Ensembl Gene ID" style="vertical-align: middle;">
+                      </div>
+                  </th>
+                  <th><div style="display: flex; align-items: center; justify-content: center;">Gene Symbol</div></th>
+                  <th>
+                      <div style="display: flex; align-items: center; justify-content: center;">
+                          <span style="margin-right: 5px;">TSS Distance</span>
+                          <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Distance from the variant to the transcription starting site (TSS)" style="vertical-align: middle;">
+                      </div>
+                  </th>
+                  <th><div style="display: flex; align-items: center; justify-content: center;">Category</div></th>
+                  <th><div style="display: flex; align-items: center; justify-content: center;">P-value</div></th>
+                  <th>
+                      <div style="display: flex; align-items: center; justify-content: center;">
+                          <span style="margin-right: 5px;">Effect Size</span>
+                          <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Effect size of the alternative allele" style="vertical-align: middle;">
+                      </div>
+                  </th>
+                  <th>
+                      <div style="display: flex; align-items: center; justify-content: center;">
+                          <span style="margin-right: 5px;">Effect Size (se)</span>
+                          <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Effect size standard error" style="vertical-align: middle;">
+                      </div>
+                  </th>
+                  <th>
+                      <div style="display: flex; align-items: center; justify-content: center;">
+                          <span style="margin-right: 5px;">PIP (SuSiE)</span>
+                          <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Posterior inclusion probability (PIP) from SuSiE" style="vertical-align: middle;">
+                      </div>
+                  </th>
+                  <th>
+                      <div style="display: flex; align-items: center; justify-content: center;">
+                          <span style="margin-right: 5px;">PIP (FINEMAP)</span>
+                          <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Posterior inclusion probability (PIP) from FINEMAP" style="vertical-align: middle;">
+                      </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                  {% for row in table_data.iterrows() %}
+                  {% for row in df_qtl.iterrows() %}
                   <tr>
-                      <td><a href="{{ url_for('gene', input_value=row[1]['gene_id']) }}">{{ row[1]['gene_id'] }} {{ index }}</a></td>
+                      <td id="step5"><a href="{{ url_for('gene', input_value=row[1]['gene_id']) }}">{{ row[1]['gene_id'] }} {{ index }}</a></td>
                       <td>{{ row[1]['gene_name'] }}</td>
                       <td>{{ row[1]['tss_distance'] }}</td>
-                      <td>{{ row[1]['eQTL_slope'] }}</td>
-                      <td>{{ row[1]['eQTL_slope_se'] }}</td>
-                      <td>{{ row[1]['eQTL_pip_fm'] }}</td>
-                      <td>{{ row[1]['eQTL_pip_susie'] }}</td>
-                      <td>{{ row[1]['pQTL_slope'] }}</td>
-                      <td>{{ row[1]['pQTL_slope_se'] }}</td>
-                      <td>{{ row[1]['pQTL_pip_fm'] }}</td>
-                      <td>{{ row[1]['pQTL_pip_susie'] }}</td>
-                      <td>{{ row[1]['EMSv2_Whole_Blood'] }}</td>
+                      <td>{{ row[1]['category'] }}</td>
+                      <td>{{ row[1]['pval_nominal'] }}</td>
+                      <td>{{ row[1]['slope'] }}</td>
+                      <td>{{ row[1]['slope_se'] }}</td>
+                      <td>{{ row[1]['pip_susie'] }}</td>
+                      <td>{{ row[1]['pip_fm'] }}</td>
                   </tr>
                   {% endfor %}
               </tbody>
             </table>
           </div>
     </div>
-
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+<script>
+    $(document).ready(function(){
+      $("#target").DataTable({
+        scrollY: true,
+        scrollX: true,
+        deferRender: true,
+        });
+    });
+</script>
 {% endblock %}

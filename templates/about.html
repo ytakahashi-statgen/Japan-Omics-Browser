@@ -1,54 +1,93 @@
 {% extends 'layout.html' %}
-
 {% block body %}
-<div class="row">
-    <div class="col-xs-12 col-sm-offset-1 col-sm-10">
-      <div class="page-header">
-    <h1>About This PheWeb</h1>
-</div>
-<p>This site was built with PheWeb (<a href="https://github.com/statgen/pheweb/" , target="_blank">original repository:
-        version 1.3.16</a>, <a href="https://github.com/mkanai/pheweb/tree/phewebjp" ,
-        target="_blank">our repository</a>). All positions are on GRCh37.</p>
-
-
-<div class="panel panel-default">
-    <div class="panel-heading">Contact</div>
-    <div class="panel-body">
-        <p>Contact: BioBank Japan Project (biobankjapan@biobankjp.net), Yukinori Okada (yokada@sg.med.osaka-u.ac.jp)</p>
-        <p>Technical inquiry: Masahiro Kanai (mkanai@broadinstitute.org)</p>
+<div class="container">
+    <h2>About this website</h2>
+    <div class="card">
+        <h5 class="card-header">About Japan Omics Browser (JOB)</h5>
+        <div class="card-body">
+            <p>Note: The website is currently at pre-publication stage. Please do not disseminate the link to the public.</p>
+            <p>
+            This website releases various omics-related data such as statistically 
+            fine-mapped mRNA expression quantitative loci (eQTL), protein-QTL (pQTL) 
+            summary statistics from
+            <a href="https://www.nature.com/articles/s41467-022-32276-2" target="_blank"
+                >The Japan COVID-19 Task Force study</a
+            >
+            (JCTF), as well as the
+            <a href="https://www.nature.com/articles/s41467-021-23134-8" target="_blank"
+            >Expression Modifier Scores</a
+            >
+            that predicts the variant’s regulatory effects.
+            </p>
+            <p>
+            Other data, including single-cell RNA-seq, 
+            <a href="https://academic.oup.com/hmg/article/31/11/1806/6464692" target="_blank"
+                >microRNA-QTL summary statistics</a
+            >
+            are planned to be added to this platform.
+            </p>
+            <p>
+            This website is developed in the 
+            <a href="http://www.sg.med.osaka-u.ac.jp/" target="_blank"
+                > Okada lab</a
+            >
+            at The University of Tokyo / Osaka University / RIKEN.<br>
+            Technical Inquiry: Yugo Takahashi (u536353h [at] ecs.osaka-u.ac.jp) <br>
+            Contact: Qingbo Wang (qingbow [at] m.u-tokyo.ac.jp), Yukinori Okada (yuki-okada [at] m.u-tokyo.ac.jp) <br>
+            </p>
+        </div>
+    </div>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Terms of use</h5>
+        <div class="card-body">
+            <h5 class="card-title">Copyright and Database Usage</h5>
+            <p>This database is protected by copyright law and other intellectual property rights. The data contained within this database, including but not limited to text, images, and any other multimedia content, is our property and is protected under applicable copyright laws.</p>
+            <h5 class="card-title">Permitted Usage</h5>
+            <p>You are granted a limited, non-exclusive, and non-transferable license to access and use the data within this database for personal, non-commercial, and informational purposes only. You may not reproduce, distribute, transmit, modify, or otherwise exploit the data in any manner without our prior written consent.</p>
+            <h5 class="card-title">Attribution</h5>
+            <p>When using data from this database, you must provide appropriate attribution to us as the source of the data.</p>
+            <h5 class="card-title">Prohibited Usage</h5>
+            <p>Unauthorized use of this database or any part of its content for commercial purposes, including but not limited to resale, data mining, or marketing, is strictly prohibited without our prior written consent.</p>            
+            <h5 class="card-title">Disclaimer</h5>
+            <p>While we make every effort to ensure the accuracy and completeness of the data in this database, we make no warranties, express or implied, regarding the accuracy, reliability, or suitability of the data for any particular purpose. The use of the data is at your own risk.</p>            
+            <h5 class="card-title">Changes to Usage Terms</h5>
+            <p>We reserve the right to change these usage terms and conditions at any time without prior notice. Any such changes will be posted on this website.</p>
+        </div>
+    </div>
+    <br>
+    <div class="card">
+        <h5 class="card-header">Privacy Policy</h5>
+        <div class="card-body">
+            <p>Last Updated: [September 27th, 2023]</p>
+            <p>By using our website, you consent to the terms of this Privacy Policy.</p>
+            <h5 class="card-title">Information We Collect</h5>
+            <p>We collect various types of information when you use our website, including but not limited to:</p>
+            <p>- Personal Information: Your name, email address, and other contact information.</p>
+            <p>- Usage Information: Information about how you interact with our website, such as pages visited, time spent on the site, and referring pages.</p>
+            <p>- Device Information: Information about the device you use to access our website, including IP address, browser type, and operating system.</p>
+            <p>In addition, we utilize third-party services, such as Google Analytics, to collect, monitor, and analyze information regarding the usage of our website by visitors.</p>
+            <h5 class="card-title">How We Use Your Information</h5>
+            <p>We use the collected information for the following purposes:</p>
+            <p>- To provide and improve our services.</p>
+            <p>- To communicate with you and respond to your inquiries.</p>
+            <p>- To personalize your experience on our website.</p>
+            <p>- To analyze and optimize the performance of our website.</p>
+            <h5 class="card-title">Sharing of Information</h5>
+            <p>We may share your information with third parties for the following purposes:</p>
+            <p>- Service Providers: We may share information with third-party service providers who help us operate our website and provide services.</p>
+            <p>- Legal Compliance: We may disclose information in response to legal requests or to comply with applicable laws and regulations.</p>
+            <p>- Business Transfers: In the event of a merger, acquisition, or sale of assets, your information may be transferred to a new entity.</p>            
+            <h5 class="card-title">Cookies and Tracking Technologies</h5>
+            <p>We use cookies and similar tracking technologies to enhance your experience on our website. You can manage your cookie preferences through your browser settings.</p>            
+            <h5 class="card-title">Data Security</h5>
+            <p>We take the security of your information seriously and have implemented measures to safeguard it. However, it's important to remember that no method of data transmission or storage is completely secure. While we do our best to protect your data, we cannot guarantee its absolute security.</p>            
+            <h5 class="card-title">Policy Updates</h5>
+            <p>We may update this Privacy Policy from time to time. The latest version will be posted on our website.</p>            
+            <h5 class="card-title">Contact Us</h5>
+            <p>If you have any questions or concerns about our Privacy Policy, please contact us.</p>            
+        </div>
     </div>
 </div>
 
-<div class="thumbnails">
-    <a href="https://biobankjp.org/english/" target="_blank" class="thumbnail">
-        <img src="/static/images/bbj_logo.png" alt="BioBank Japan">
-    </a>
-    <a href="https://www.ims.u-tokyo.ac.jp/imsut/en/" target="_blank" class="thumbnail">
-        <img src="/static/images/imsut_logo.png" alt="IMSUT">
-    </a>
-    <a href="http://www.sg.med.osaka-u.ac.jp/" target="_blank" class="thumbnail">
-        <img src="/static/images/osaka_logo.png" alt="Okada Lab">
-    </a>
-    <a href="https://www.ims.riken.jp/english/" target="_blank" class="thumbnail">
-        <img src="/static/images/riken_ims_logo.png" alt="RIKEN IMS">
-    </a>
-    <a href="https://humandbs.biosciencedbc.jp/en/" target="_blank" class="thumbnail">
-        <img src="/static/images/nbdc_logo.png" alt="NBDC Human Database">
-    </a>
-    <a href="http://jenger.riken.jp/en/" target="_blank" class="thumbnail">
-        <img src="/static/images/jenger_logo.png" alt="Jenger">
-    </a>
-</div>
-
-
-<footer>
-  <div class="text-center">
-    <a href="/">
-      <img id="footer-logo" src="/static/images/phewebjp_logo.svg" alt="PheWeb.jp logo">
-    </a>
-  </div>
-</footer>
-
-
-</body>
 {% endblock %}

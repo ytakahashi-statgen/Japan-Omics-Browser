@@ -1,11 +1,60 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <div class="container">
-        <div class="row justify-content-center">
-                <h1>eQTL plot</h1>
-                {{ html|safe }}
+<div class="container">
+    <h2>Publications</h2>
+        <div class="card">
+            <h5 class="card-header">The results on this website are from the following studies:</h5>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                Statistically and functionally fine-mapped blood e/pQTLs from 1,405 humans reveal their distinct regulation patterns and disease relevance. <br>Wang, Q.S., et al, Nat. Genet.(2024)</a>
+                <a href="https://humandbs.dbcls.jp/files/hum0343/hum0343.v3.qtl.v1.zip" target="_blank" class="btn btn-outline-secondary">Download</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="https://doi.org/10.1038/s41467-022-32276-2" target="_blank" >The whole blood transcriptional regulation landscape in 465 COVID-19 infected samples from Japan COVID-19 Task Force. <br>Wang, Q.S., et al, Nat. Commun.(2022)</a>
+                    <a href="https://humandbs.dbcls.jp/files/hum0343/hum0343.v2.qtl.v1.zip" target="_blank" class="btn btn-outline-secondary">Download</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="https://doi.org/10.1038/s41467-021-23134-8" target="_blank" >Leveraging supervised learning for functionally informed fine-mapping of cis-eQTLs identifies an additional 20,913 putative causal eQTLs.<br>Wang, Q.S., et al, Nat. Commun.(2021)</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="https://dx.doi.org/10.1038/s41588-021-00931-x" target="_blank" >A cross-population atlas of genetic associations for 220 human phenotypes. <br>Sakaue, S. & Kanai, M., et al, Nat. Genet.(2021)</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="http://dx.doi.org/10.1101/2021.09.03.21262975" target="_blank" >Insights from complex trait fine-mapping across diverse populations.<br>Kanai, M., et al, medRxiv (2021)</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="https://doi.org/10.1038/s41592-020-0965-y" target="_blank" >A systematic evaluation of the design and context dependencies of massively parallel reporter assays. <br>Klein, J.C., Agarwal, V., Inoue, F. et al, Nat.  Methods.(2020)</a>
+                </li>
+            </ul>
+            </div>
+            <br>
+            <div class="bg-light">
+                <p>The summary statistics of eQTL analysis, as well as the RNA-seq expression matrix described in  
+                    <a href="https://doi.org/10.1038/s41467-022-32276-2" target="_blank"
+                    >Wang, Q.S., et al. (2022)</a>
+                    are available at
+                    <a href="https://humandbs.dbcls.jp/en/" target="_blank"
+                    >the National Bioscience Database Center (NBDC) Human Database</a>
+                    with the accession number of hum0343.
+                </p>
+                <p>BioBank Japan Fine-mapping results described in
+                    <a href="https://doi.org/10.1038/s41588-021-00931-x" target="_blank"
+                    >Sakaue, S. & Kanai, M., et al. (2021)</a>
+                    can be found
+                    <a href="https://humandbs.dbcls.jp/files/hum0197/hum0197_v5_finemap_v1_header.html" target="_blank"
+                    >here</a>
+                    .
+                </p>
+                <p>UKBB fine-mapping results described in 
+                    <a href="http://dx.doi.org/10.1101/2021.09.03.21262975" target="_blank"
+                    >Kanai, M., et al. (2021)</a>
+                    are available at 
+                    <a href="https://www.finucanelab.org/data" target="_blank"
+                    >the Finucane Lab website</a>
+                    .
+                </p>
+            </div>
         </div>
-    </div>
-
+</div>
 {% endblock %}

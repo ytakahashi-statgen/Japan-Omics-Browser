@@ -1,52 +1,407 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <h1>{{ title_name }}</h1>
-                {{ html|safe }}
-            </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // ボタンをクリックした時の処理を設定
+      document.getElementById("startIntroBtn").addEventListener("click", function() {
+        // intro.jsを開始する
+        introJs()
+        .setOptions({
+            steps: [
+            {
+              element: "#step1",  
+              intro: "This is the gene page. It displays variants within a cis-window of the gene (i.e. within 1Mb from the transcription starting site = TSS).",
+            },
+            {
+              element: "#step2",  
+              intro: "Displays the gene name and its Ensembl ID (ENSG ID).",
+            },
+            {
+              element: "#step3",  
+              intro: "Provides links to various databases.",
+            },
+            {
+              element: "#step4",  
+              intro: "These figures display per-variant metrics.",
+            },
+            {
+              element: "#step5",  
+              intro: "Detailed information of the variants plotted on the figures is summarized in a table.",
+            },
+            {
+              element: "#step6",  
+              intro: "Clicking on a variant of interest leads to the variant page, where further information about the variant effect on cis-genes are provided.",
+            },
+          ],
+        })
+        .start();
+      });
+    });
+</script>
+    <div id="step1" class="container">
+        <div class="d-flex justify-content-end">
+            <button id="startIntroBtn" class="btn btn-outline-primary">Tutorial</button>
         </div>
-        <h1>EMS top hit</h1>
-        <div class="table-responsive">
-            <table class="table table-sm table-striped text-center">
+        <div class="row justify-content-center" id="datatable-container" style="display: none;">
+            <h2 id="step2">{{ gene_name }}({{ gene_id }})</h2>
+            <div id="step3">
+            <p>View on
+                <a href="https://pheweb.jp/gene/{{ gene_name }}">Pheweb.jp</a>
+                , <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&singleSearch=knownCanonical&position={{ gene_name }}">UCSC</a>
+                , <a href="https://www.ebi.ac.uk/gwas/search?query={{ gene_name }}">GWAS Catalog</a>
+                , <a href="https://gtexportal.org/home/gene/{{ gene_name }}">GTEx</a>
+                , <a href="https://gnomad.broadinstitute.org/gene/{{ gene_name }}">gnomAD</a>
+            </p>
+            </div>
+            <hr>
+        <h5>Statistical fine-mapping results from Japan COVID-19 Task Force</h5>
+        <h6>(Shown only for PIP>0.001)</h5>
+        <div id="step4">{{ html_qtl|safe }}</div>
+        <div id="step5" class="table-responsive">
+            <table class="table table-striped text-center" id="target">
                 <thead>
                 <tr>
-                    <th>variant_id_hg38</th>
-                    <th>rsid</th>
-                    <th>tss_distance</th>
-                    <th>eQTL_slope</th>
-                    <th>eQTL_slope_se</th>
-                    <th>eQTL_pip_fm</th>
-                    <th>eQTL_pip_susie</th>
-                    <th>pQTL_slope</th>
-                    <th>pQTL_slope_se</th>
-                    <th>pQTL_pip_fm</th>
-                    <th>pQTL_pip_susie</th>
-                    <th>EMS</th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Variant ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="chr:pos:ref:alt in hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">rs ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="rsid based on dbSNP release 155, hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">TSS Distance</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Distance from the variant to the transcription starting site (TSS)" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;">Category</div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;">P-value</div></th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Effect Size</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Effect size of the alternative allele" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Effect Size (se)</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Effect size standard error" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">PIP (SuSiE)</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Posterior inclusion probability (PIP) from SuSiE" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">PIP (FINEMAP)</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Posterior inclusion probability (PIP) from FINEMAP" style="vertical-align: middle;">
+                        </div>
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
-                    {% for row in table_data.iterrows() %}
+                    {% for row in df_qtl.iterrows() %}
                     <tr>
-                        <td><a href="{{ url_for('variant', input_value=row[1]['variant_id_hg38']) }}">{{ row[1]['variant_id_hg38'] }} {{ index }}</a></td>
+                        <td id="step6"><a href="{{ url_for('variant', input_value=row[1]['variant_id_hg38']) }}">{{ row[1]['variant_id_hg38'] }}</a></td>
                         <td>{{ row[1]['rsid'] }}</td>
                         <td>{{ row[1]['tss_distance'] }}</td>
-                        <td>{{ row[1]['eQTL_slope'] }}</td>
-                        <td>{{ row[1]['eQTL_slope_se'] }}</td>
-                        <td>{{ row[1]['eQTL_pip_fm'] }}</td>
-                        <td>{{ row[1]['eQTL_pip_susie'] }}</td>
-                        <td>{{ row[1]['pQTL_slope'] }}</td>
-                        <td>{{ row[1]['pQTL_slope_se'] }}</td>
-                        <td>{{ row[1]['pQTL_pip_fm'] }}</td>
-                        <td>{{ row[1]['pQTL_pip_susie'] }}</td>
-                        <td>{{ row[1]['EMSv2_Whole_Blood'] }}</td>
+                        <td>{{ row[1]['category'] }}</td>
+                        <td>{{ row[1]['pval_nominal'] }}</td>
+                        <td>{{ row[1]['slope'] }}</td>
+                        <td>{{ row[1]['slope_se'] }}</td>
+                        <td>{{ row[1]['pip_susie'] }}</td>
+                        <td>{{ row[1]['pip_fm'] }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        <br>
+        <hr>
+        <h5>Statistical fine-mapping results from UK Biobank</h5>
+        <div id="step4">{{ html_ukb|safe }}</div>
+        <div class="table-responsive">
+            <table class="table table-striped text-center" id="target2">
+                <thead>
+                <tr>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Variant ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="chr:pos:ref:alt in hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">rs ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="rsid based on dbSNP release 155, hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">TSS Distance</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Distance from the variant to the transcription starting site (TSS)" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;">Category</div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;">Trait</div></th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">PIP (SuSiE)</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Posterior inclusion probability (PIP) from SuSiE" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for row in df_ukb.iterrows() %}
+                    <tr>
+                        <td><a href="{{ url_for('variant', input_value=row[1]['variant_id_hg38']) }}">{{ row[1]['variant_id_hg38'] }}</a></td>
+                        <td>{{ row[1]['rsid'] }}</td>
+                        <td>{{ row[1]['tss_distance'] }}</td>
+                        <td>{{ row[1]['categ'] }}</td>
+                        <td>{{ row[1]['trait'] }}</td>
+                        <td>{{ row[1]['pip'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <hr>
+        <h5>Expression Modifier Score(EMS) for GTEx 49tissues</h5>
+        <div id="step4">{{ html_ems|safe }}</div>
+        <div class="table-responsive">
+            <table class="table table-striped text-center" id="target3">
+                <thead>
+                <tr>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Variant ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="chr:pos:ref:alt in hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">rs ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="rsid based on dbSNP release 155, hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">TSS Distance</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Distance from the variant to the transcription starting site (TSS)" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Whole Blood</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Muscle Skeletal</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Liver</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Cerebellum</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Prostate</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Spleen</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Skin Sun Exposed Lower leg</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Artery Coronary</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Esophagus Muscularis</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Esophagus Gastroesophageal Junction</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Artery Tibial</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Heart Atrial Appendage</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Nerve Tibial</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Heart Left Ventricle</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Adrenal Gland</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Adipose Visceral Omentum</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Pancreas</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Lung</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Pituitary</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Nucleus accumbens basal ganglia</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Colon Transverse</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Adipose Subcutaneous</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Esophagus Mucosa</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Cortex</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Thyroid</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Stomach</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Breast Mammary Tissue</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Colon Sigmoid</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Skin Not Sun Exposed Suprapubic</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Testis</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Artery Aorta</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Amygdala</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Anterior cingulate cortex BA24</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Caudate basal ganglia</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Cerebellar Hemisphere</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Frontal Cortex BA9</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Hippocampus</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Hypothalamus</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Putamen basal ganglia</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Spinal cord cervical c-1</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Brain Substantia nigra</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Cells Cultured fibroblasts</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Cells EBV-transformed lymphocytes</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Kidney Cortex</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Minor Salivary Gland</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Ovary</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Small Intestine Terminal Ileum</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Uterus</span></div></th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;"><span style="margin-right: 5px;">Vagina</span></div></th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for row in df_ems.iterrows() %}
+                    <tr>
+                        <td><a href="{{ url_for('variant', input_value=row[1]['variant_id_hg38']) }}">{{ row[1]['variant_id_hg38'] }}</a></td>
+                        <td>{{ row[1]['rsid'] }}</td>
+                        <td>{{ row[1]['tss_distance'] }}</td>
+                        <td>{{ row[1]['Whole_Blood'] }}</td>
+                        <td>{{ row[1]['Muscle_Skeletal'] }}</td>
+                        <td>{{ row[1]['Liver'] }}</td>
+                        <td>{{ row[1]['Brain_Cerebellum'] }}</td>
+                        <td>{{ row[1]['Prostate'] }}</td>
+                        <td>{{ row[1]['Spleen'] }}</td>
+                        <td>{{ row[1]['Skin_Sun_Exposed_Lower_leg'] }}</td>
+                        <td>{{ row[1]['Artery_Coronary'] }}</td>
+                        <td>{{ row[1]['Esophagus_Muscularis'] }}</td>
+                        <td>{{ row[1]['Esophagus_Gastroesophageal_Junction'] }}</td>
+                        <td>{{ row[1]['Artery_Tibial'] }}</td>
+                        <td>{{ row[1]['Heart_Atrial_Appendage'] }}</td>
+                        <td>{{ row[1]['Nerve_Tibial'] }}</td>
+                        <td>{{ row[1]['Heart_Left_Ventricle'] }}</td>
+                        <td>{{ row[1]['Adrenal_Gland'] }}</td>
+                        <td>{{ row[1]['Adipose_Visceral_Omentum'] }}</td>
+                        <td>{{ row[1]['Pancreas'] }}</td>
+                        <td>{{ row[1]['Lung'] }}</td>
+                        <td>{{ row[1]['Pituitary'] }}</td>
+                        <td>{{ row[1]['Brain_Nucleus_accumbens_basal_ganglia'] }}</td>
+                        <td>{{ row[1]['Colon_Transverse'] }}</td>
+                        <td>{{ row[1]['Adipose_Subcutaneous'] }}</td>
+                        <td>{{ row[1]['Esophagus_Mucosa'] }}</td>
+                        <td>{{ row[1]['Brain_Cortex'] }}</td>
+                        <td>{{ row[1]['Thyroid'] }}</td>
+                        <td>{{ row[1]['Stomach'] }}</td>
+                        <td>{{ row[1]['Breast_Mammary_Tissue'] }}</td>
+                        <td>{{ row[1]['Colon_Sigmoid'] }}</td>
+                        <td>{{ row[1]['Skin_Not_Sun_Exposed_Suprapubic'] }}</td>
+                        <td>{{ row[1]['Testis'] }}</td>
+                        <td>{{ row[1]['Artery_Aorta'] }}</td>
+                        <td>{{ row[1]['Brain_Amygdala'] }}</td>
+                        <td>{{ row[1]['Brain_Anterior_cingulate_cortex_BA24'] }}</td>
+                        <td>{{ row[1]['Brain_Caudate_basal_ganglia'] }}</td>
+                        <td>{{ row[1]['Brain_Cerebellar_Hemisphere'] }}</td>
+                        <td>{{ row[1]['Brain_Frontal_Cortex_BA9'] }}</td>
+                        <td>{{ row[1]['Brain_Hippocampus'] }}</td>
+                        <td>{{ row[1]['Brain_Hypothalamus'] }}</td>
+                        <td>{{ row[1]['Brain_Putamen_basal_ganglia'] }}</td>
+                        <td>{{ row[1]['Brain_Spinal_cord_cervical_c_1'] }}</td>
+                        <td>{{ row[1]['Brain_Substantia_nigra'] }}</td>
+                        <td>{{ row[1]['Cells_Cultured_fibroblasts'] }}</td>
+                        <td>{{ row[1]['Cells_EBV_transformed_lymphocytes'] }}</td>
+                        <td>{{ row[1]['Kidney_Cortex'] }}</td>
+                        <td>{{ row[1]['Minor_Salivary_Gland'] }}</td>
+                        <td>{{ row[1]['Ovary'] }}</td>
+                        <td>{{ row[1]['Small_Intestine_Terminal_Ileum'] }}</td>
+                        <td>{{ row[1]['Uterus'] }}</td>
+                        <td>{{ row[1]['Vagina'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <hr>
+        <h5>Expression Fold Change in Massively Parallel Reporter Assay (MPRA)</h5>
+        <div id="step4">{{ html_mpra|safe }}</div>
+        <div class="table-responsive">
+            <table class="table table-striped text-center" id="target4">
+                <thead>
+                <tr>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Variant ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="chr:pos:ref:alt in hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">rs ID</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="rsid based on dbSNP release 155, hg38" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">TSS Distance</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Distance from the variant to the transcription starting site (TSS)" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;">P-Value</div></th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Expression Fold Change</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Allelic effect(log fold change)" style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th>
+                        <div style="display: flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 5px;">Tier</span>
+                            <img src="/static/images/info-circle-fill.svg" data-toggle="tooltip" data-placement="top" title="Tier 1 corresponds to FDR<0.01 and tier 2 to FDR<0.1." style="vertical-align: middle;">
+                        </div>
+                    </th>
+                    <th><div style="display: flex; align-items: center; justify-content: center;">Cell Type</div></th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for row in df_mpra.iterrows() %}
+                    <tr>
+                        <td><a href="{{ url_for('variant', input_value=row[1]['variant_id_hg38']) }}">{{ row[1]['variant_id_hg38'] }}</a></td>
+                        <td>{{ row[1]['rsid'] }}</td>
+                        <td>{{ row[1]['tss_distance'] }}</td>
+                        <td>{{ row[1]['pval'] }}</td>
+                        <td>{{ row[1]['alpha_diff'] }}</td>
+                        <td>{{ row[1]['Tier'] }}</td>
+                        <td>{{ row[1]['cell_type'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <hr>
     </div>
+    </p>
+<p>
+</p>
+<script>
+    $(document).ready(function() {
+      $("#target").DataTable({
+        pageLength: 10,
+        scrollY: true, 
+        scrollX: true,
+        deferRender: true,
+      });
+      $("#target2").DataTable({
+        pageLength: 10,
+        deferRender: true,
+      });
+      $("#target3").DataTable({
+        pageLength: 10,
+        scrollY: true,
+        scrollX: true,
+        deferRender: true,
+      });
+      $("#target4").DataTable({
+        pageLength: 10,
 
+        deferRender: true,
+      });
+      $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+      });
+      $("#datatable-container").css("display", "block");
+    });
+</script>
 {% endblock %}
