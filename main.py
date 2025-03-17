@@ -1,48 +1,31 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
+from flask import url_for
 from flask_bootstrap import Bootstrap
 import pandas as pd
+from bokeh.plotting import figure
+from bokeh.resources import CDN
+from bokeh.models import (HoverTool, ResetTool)
+from bokeh.embed import file_html
+from bokeh.layouts import layout
+from bokeh.models import ColumnDataSource,Legend
+from bokeh.models import Div,SaveTool
+from bokeh.models import ColumnDataSource, RangeSlider, BoxAnnotation, CustomJS
 import os
 import sqlalchemy
 from sqlalchemy import text
-from bokeh.plotting import figure
-from bokeh.resources import CDN
-from bokeh.embed import file_html
-from bokeh.layouts import layout
-from bokeh.models import (
-    HoverTool, ResetTool, SaveTool, Legend, Div, ColumnDataSource, 
-    RangeSlider, CustomJS, DataRange1d
-)
 from bokeh.models.widgets import Select
+from bokeh.models import DataRange1d
 from bokeh.transform import factor_cmap
+from bokeh.plotting import figure, output_file, save
 
 #初期設定
-app = Flask(__name__) 
-bootstrap=Bootstrap(app) 
+app = Flask(__name__)
+bootstrap=Bootstrap(app)
+df_tf = pd.read_csv("./example/df_qtl_example.csv", delimiter=",",index_col=None)
+df_ukb_base = pd.read_csv("./example/df_ukb_example.csv", delimiter=",",index_col=None)
+df_ems_base = pd.read_csv("./example/df_ems_example.csv", delimiter=",",index_col=None)
+df_mpra_base = pd.read_csv("./example/df_mpra_gene.csv", delimiter=",",index_col=None)
 
-def connect_unix_socket() -> sqlalchemy.engine.base.Engine:
-    """ Initializes a Unix socket connection pool for a Cloud SQL instance of MySQL. """
-    # Note: Saving credentials in environment variables is convenient, but not
-    # secure - consider a more secure solution such as
-    # Cloud Secret Manager (https://cloud.google.com/secret-manager) to help
-    # keep secrets safe.
-    db_user = os.environ["DB_USER"]  # e.g. 'my-database-user'
-    db_pass = os.environ["DB_PASS"]  # e.g. 'my-database-password'
-    db_name = os.environ["DB_NAME"]  # e.g. 'my-database'
-    unix_socket_path = os.environ["INSTANCE_UNIX_SOCKET"]  # e.g. '/cloudsql/project:region:instance'
-
-    pool = sqlalchemy.create_engine(
-        # Equivalent URL:
-        # mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=<socket_path>/<cloud_sql_instance_name>
-        sqlalchemy.engine.url.URL.create(
-            drivername="mysql+pymysql",
-            username=db_user,
-            password=db_pass,
-            database=db_name,
-            query={"unix_socket": unix_socket_path},
-        ),
-        # ...
-    )
-    return pool
 
 @app.route('/', methods=["GET", "POST"])
 def index():
@@ -53,91 +36,61 @@ def index():
         else:
             return redirect(url_for('gene',input_value=input_value))
     return render_template("index.html")
-
+    
 @app.route('/variant')
 def variant():
     input_value = request.args.get('input_value')
-
-    # SQLクエリを選択
     if input_value.startswith('chr'):
-        query = "SELECT * FROM qtls_table WHERE variant_id_hg38 = :input_value"
-
-        engine = connect_unix_socket()
-        with engine.connect() as conn:
-            params = {'input_value': input_value}
-            df_qtl = pd.read_sql(text(query), conn, params=params)
+        df_qtl = df_tf[df_tf["variant_id_hg38"]==input_value]  
         if len(df_qtl) == 0:
             error_message = f"No data found for input value: {input_value}"
             return render_template('index.html', error_message=error_message)
         else:
-            variant = input_value.split("chr")[1].split(":") 
+            variant = input_value.split("chr")[1].split(":")
             return render_template('variant.html', df_qtl=df_qtl,title_name=input_value,var=variant)  
         
     elif input_value.startswith('rs'):
-        query = "SELECT * FROM qtls_table WHERE rsid = :input_value"
-
-        engine = connect_unix_socket()
-        with engine.connect() as conn:
-            params = {'input_value': input_value}
-            df_qtl = pd.read_sql(text(query), conn, params=params)
+        df_qtl = df_tf[df_tf["rsid"]==input_value]  
         if len(df_qtl) == 0:
             error_message = f"No data found for input value: {input_value}"
             return render_template('index.html', error_message=error_message)
         else:
-            variant = df_qtl['variant_id_hg38'][0].split("chr")[1].split(":") 
+            variant = df_qtl['variant_id_hg38'].values[0].split("chr")[1].split(":")
             return render_template('variant.html', df_qtl=df_qtl,title_name=input_value,var=variant)  
     else:
         error_message = f"No data found for input value: {input_value}"
         return render_template('index.html', error_message=error_message)
 
-
 @app.route('/gene', methods=['GET'])
 def gene():
-    input_value = request.args.get('input_value') 
-    # SQLクエリを選択
+    input_value = request.args.get('input_value')
+    input_value = input_value.upper()
     if input_value.startswith('ENSG'):
-        input_value = input_value.split('.')[0] 
-        input_value = input_value.upper()
-        query = "SELECT * FROM qtls_table WHERE gene_id = :input_value"
-        query_ems = "SELECT * FROM ems_table WHERE gene_id = :input_value"
-        query_mpra = "SELECT * FROM mpra_table WHERE gene_id = :input_value"
-        query_ukbb = "SELECT * FROM ukbb_table WHERE gene_id = :input_value"
+        input_value = input_value.split('.')[0]
+        df_qtl = df_tf[df_tf["gene_id"]==input_value]    
+        df_ems = df_ems_base[df_ems_base["gene_id"]==input_value]
+        df_mpra = df_mpra_base[df_mpra_base["gene_id"]==input_value]
+        df_ukb = df_ukb_base[df_ukb_base["gene_id"]==input_value]
 
-        engine = connect_unix_socket()
-        with engine.connect() as conn:
-            params = {'input_value': input_value}
-            df_qtl = pd.read_sql(text(query), conn, params=params)
-            df_ems = pd.read_sql(text(query_ems), conn, params=params)
-            df_mpra = pd.read_sql(text(query_mpra), conn, params=params)
-            df_ukb = pd.read_sql(text(query_ukbb), conn, params=params)
-            if len(df_qtl) == 0:
-                error_message = f"No data found for input value: {input_value}"
-                return render_template('index.html', error_message=error_message)
-            else:
-                gene_name = df_qtl['gene_name'][0]
-                gene_id = input_value      
+        if len(df_qtl) == 0:
+            error_message = f"No data found for input value: {input_value}"
+            return render_template('index.html', error_message=error_message)
+        else:
+            gene_name = df_qtl['gene_name'].values[0]
+            gene_id = input_value      
     else:
-        input_value = input_value.upper()
-        query = "SELECT * FROM qtls_table WHERE gene_name = :input_value"
-        query_ems = "SELECT * FROM ems_table WHERE gene_name = :input_value"
-        query_mpra = "SELECT * FROM mpra_table WHERE gene_name = :input_value"
-        query_ukbb = "SELECT * FROM ukbb_table WHERE gene_name = :input_value"
+        df_qtl = df_tf[df_tf["gene_name"]==input_value]   
+        df_ems = df_ems_base[df_ems_base["gene_name"]==input_value]
+        df_mpra = df_mpra_base[df_mpra_base["gene_name"]==input_value]
+        df_ukb = df_ukb_base[df_ukb_base["gene_name"]==input_value]
 
-        engine = connect_unix_socket()
-        with engine.connect() as conn:
-            params = {'input_value': input_value}
-            df_qtl = pd.read_sql(text(query), conn, params=params)
-            df_ems = pd.read_sql(text(query_ems), conn, params=params)
-            df_mpra = pd.read_sql(text(query_mpra), conn, params=params)
-            df_ukb = pd.read_sql(text(query_ukbb), conn, params=params)
-            if len(df_qtl) == 0:
-                error_message = f"No data found for input value: {input_value}"
-                return render_template('index.html', error_message=error_message)
-            else:
-                gene_name = input_value
-                gene_id = df_qtl['gene_id'][0]
-    
-    # create data source
+        if len(df_qtl) == 0:
+            error_message = f"No data found for input value: {input_value}"
+            return render_template('index.html', error_message=error_message)
+        else:
+            gene_name = input_value
+            gene_id = df_qtl['gene_id'].values[0]
+
     df_k562 = df_mpra[df_mpra["cell_type"]=="K562"] 
     df_hepg2 = df_mpra[df_mpra["cell_type"]=="HepG2"] 
 
@@ -145,8 +98,8 @@ def gene():
     source_eqtl = ColumnDataSource(data=df_qtl[df_qtl['category']=="eQTL"])
     source_pqtl = ColumnDataSource(data=df_qtl[df_qtl['category']=="pQTL"])
 
-    source_eqtl.data['y']=source_eqtl.data['pip_susie']  
-    source_pqtl.data['y']=source_pqtl.data['pip_susie']  
+    source_eqtl.data['y']=source_eqtl.data['pip_susie'] #default y
+    source_pqtl.data['y']=source_pqtl.data['pip_susie'] #default y
 
     #2 UKBB plots: データソースを作成
     source_cardiovascular = ColumnDataSource(data=df_ukb[df_ukb['categ']=="Cardiovascular"])
@@ -161,21 +114,21 @@ def gene():
     source_renal = ColumnDataSource(data=df_ukb[df_ukb['categ']=="Renal"])
     source_skeletal = ColumnDataSource(data=df_ukb[df_ukb['categ']=="Skeletal"])
 
-    source_cardiovascular.data['y']=source_cardiovascular.data['pip']  
-    source_hematopoietic.data['y']=source_hematopoietic.data['pip']  
-    source_hepatic.data['y']=source_hepatic.data['pip']  
-    source_immunological.data['y']=source_immunological.data['pip']  
-    source_lipids.data['y']=source_lipids.data['pip']  
-    source_metabolic.data['y']=source_metabolic.data['pip']  
-    source_neurological.data['y']=source_neurological.data['pip']  
-    source_other.data['y']=source_other.data['pip']  
-    source_psychological.data['y']=source_psychological.data['pip']  
-    source_renal.data['y']=source_renal.data['pip']  
-    source_skeletal.data['y']=source_skeletal.data['pip']  
+    source_cardiovascular.data['y']=source_cardiovascular.data['pip'] #default y
+    source_hematopoietic.data['y']=source_hematopoietic.data['pip'] #default y
+    source_hepatic.data['y']=source_hepatic.data['pip'] #default y
+    source_immunological.data['y']=source_immunological.data['pip'] #default y
+    source_lipids.data['y']=source_lipids.data['pip'] #default y
+    source_metabolic.data['y']=source_metabolic.data['pip'] #default y
+    source_neurological.data['y']=source_neurological.data['pip'] #default y
+    source_other.data['y']=source_other.data['pip'] #default y
+    source_psychological.data['y']=source_psychological.data['pip'] #default y
+    source_renal.data['y']=source_renal.data['pip'] #default y
+    source_skeletal.data['y']=source_skeletal.data['pip'] #default y
 
     #3 EMS plots: データソースを作成
-    source_ems = ColumnDataSource(df_ems) 
-    source_ems.data['y5']=source_ems.data['Whole_Blood']  
+    source_ems = ColumnDataSource(df_ems) # ColumnDataSourceにデータを格納
+    source_ems.data['y5']=source_ems.data['Whole_Blood'] #default y
 
     # HoverToolの設定
     hover_qtl = HoverTool(tooltips=[("Variant ID", "@variant_id_hg38"),
@@ -186,14 +139,14 @@ def gene():
     hover_ukb = HoverTool(tooltips=[("Variant ID", "@variant_id_hg38"),
                                 ("Category", "@categ"),
                                 ("Trait", "@trait"),
-                                ("PIP(SuSiE)", "@pip"),]) 
+                                ("PIP(SuSiE)", "@pip"),])
     hover_ems = HoverTool(tooltips=[("Variant ID", "@variant_id_hg38")])
     hover_mpra = HoverTool(tooltips=[("Variant ID", "@variant_id_hg38"),
                                      ("P-Value", "@pval"),
-                                     ("logFC", "@alpha_diff")])
+                                     ("logFC", "@alpha_diff")]) 
 
     #1 QTL plots
-    plot_qtl = figure(width=1080, height=220, title="PIP",title_location="left",x_axis_label=f'Distance to TSS of {gene_name}', tools=[hover_qtl,SaveTool()],x_range=([-1e6, 1e6]),y_range = [0, 1.04])
+    plot_qtl = figure(width=1080, height=220, title="PIP",title_location="left",x_axis_label=f'Distance to TSS of {gene_name}', tools=[hover_qtl,SaveTool()],x_range=([-1e6, 1e6]),y_range = [0, 1.06])
     plot_qtl.title.text_font_size = "14pt"
     plot_qtl.title.align = "center"
     plot_qtl.title.text_font_style = "normal"
@@ -205,11 +158,9 @@ def gene():
     legend = Legend(items=[( "eQTL", [glyph_eqtl]), ("pQTL", [glyph_pqtl])], location='top_right')
     plot_qtl.add_layout(legend)
     legend.click_policy = "hide"
-    #1 QTL plots:セレクトボックスの作成1 plot_qtl
     options_qtl = ['P-value','PIP (SuSiE)','PIP (FINEMAP)'] 
     select_qtl = Select(options=options_qtl,value='PIP (SuSiE)') 
 
-    #1 QTL plots
     callback_qtl = CustomJS(args=dict(source_eqtl=source_eqtl, source_pqtl=source_pqtl, select=select_qtl, title=plot_qtl.title, y_range=plot_qtl.y_range), code="""
         var selected_category = select.value;
         if (selected_category == "P-value") {
@@ -219,7 +170,7 @@ def gene():
             
             // y_rangeの最大値を繰り上げる処理
             let maxValue = Math.max(...source_eqtl.data['y'], ...source_pqtl.data['y']);
-            let roundedUpMaxValue = Math.ceil(maxValue / 10) * 10; 
+            let roundedUpMaxValue = Math.ceil(maxValue / 10) * 10;  
             
             // y軸設定
             y_range.start = 0;
@@ -231,7 +182,7 @@ def gene():
             
             // y軸設定
             y_range.start = 0;
-            y_range.end = 1.04;
+            y_range.end = 1.06;
         } else if (selected_category == "PIP (FINEMAP)") {
             source_eqtl.data['y'] = source_eqtl.data['pip_fm'];
             source_pqtl.data['y'] = source_pqtl.data['pip_fm'];
@@ -239,7 +190,7 @@ def gene():
             
             // y軸設定
             y_range.start = 0;
-            y_range.end = 1.04;
+            y_range.end = 1.06;
         }
         source_eqtl.change.emit();
         source_pqtl.change.emit();
@@ -247,15 +198,14 @@ def gene():
 
     select_qtl.js_on_change('value', callback_qtl)
 
-    #1 QTL plots: RangeSliderの作成
     slider_qtl = RangeSlider(title=" Adjust X-Axis range",start=-1e6,end=1e6,step=10,value=(-1e6, 1e6),width_policy="max")
-    slider_qtl.js_link("value", plot_qtl.x_range, "start", attr_selector=0) 
+    slider_qtl.js_link("value", plot_qtl.x_range, "start", attr_selector=0)
     slider_qtl.js_link("value", plot_qtl.x_range, "end", attr_selector=1) 
-    slider_qtl.margin = (0, 0, 0, 30) 
-    slider_qtl.bar_color = "cornflowerblue" 
+    slider_qtl.margin = (0, 0, 0, 30)
+    slider_qtl.bar_color = "cornflowerblue"
     
     #2 UKBB plots
-    plot_ukb = figure(width=1080, height=260, title="UKB PIP",title_location="left",x_axis_label=f'Distance to TSS of {gene_name}', tools=[hover_ukb,ResetTool(),SaveTool()],x_range=([-1e6, 1e6]),y_range = [0, 1.04])
+    plot_ukb = figure(width=1080, height=260, title="UKB PIP",title_location="left",x_axis_label=f'Distance to TSS of {gene_name}', tools=[hover_ukb,ResetTool(),SaveTool()],x_range=([-1e6, 1e6]),y_range = [0, 1.06])
     plot_ukb.title.text_font_size = "14pt"
     plot_ukb.title.align = "center"
     plot_ukb.title.text_font_style = "normal"
@@ -278,10 +228,8 @@ def gene():
                     location='top_center', orientation='horizontal')
     plot_ukb.add_layout(legend_ukb, 'above')
     legend_ukb.click_policy = "hide"
-
-    #2 UKBB plots: RangeSliderの作成
     slider_ukb = RangeSlider(title=" Adjust X-Axis range",start=-1e6,end=1e6,step=10,value=(-1e6, 1e6),width_policy="max")
-    slider_ukb.js_link("value", plot_ukb.x_range, "start", attr_selector=0)
+    slider_ukb.js_link("value", plot_ukb.x_range, "start", attr_selector=0) 
     slider_ukb.js_link("value", plot_ukb.x_range, "end", attr_selector=1) 
     slider_ukb.margin = (0, 0, 0, 30) 
     slider_ukb.bar_color = "cornflowerblue" 
@@ -295,7 +243,6 @@ def gene():
     plot_ems.xgrid.grid_line_alpha = 0.5
     plot_ems.ygrid.grid_line_color = None
 
-    #3 EMS plots:セレクトボックスの作成2 plot_ems
     options_ems= ['Whole_Blood', 'Muscle_Skeletal', 'Liver', 'Brain_Cerebellum','Prostate', 'Spleen', 'Skin_Sun_Exposed_Lower_leg', 'Artery_Coronary',
                                    'Esophagus_Muscularis', 'Esophagus_Gastroesophageal_Junction','Artery_Tibial', 'Heart_Atrial_Appendage', 'Nerve_Tibial',
                                    'Heart_Left_Ventricle', 'Adrenal_Gland', 'Adipose_Visceral_Omentum','Pancreas', 'Lung', 'Pituitary',
@@ -305,17 +252,14 @@ def gene():
                                    'Brain_Frontal_Cortex_BA9', 'Brain_Hippocampus', 'Brain_Hypothalamus','Brain_Putamen_basal_ganglia', 'Brain_Spinal_cord_cervical_c-1',
                                    'Brain_Substantia_nigra', 'Cells_Cultured_fibroblasts','Cells_EBV-transformed_lymphocytes', 'Kidney_Cortex',
                                    'Minor_Salivary_Gland', 'Ovary', 'Small_Intestine_Terminal_Ileum','Uterus', 'Vagina']
-    #3 EMS plots:セレクトボックスの選択肢
     select_ems = Select(options=options_ems,value='Whole_Blood') 
     callback_ems = CustomJS(args=dict(source_ems=source_ems, y_axis3=select_ems), code="""
-        const data = source_ems.data; 
-        const y5 = y_axis3.value; 
-        data['y5'] = data[y5]; 
-        source_ems.change.emit(); 
+        const data = source_ems.data; // ColumnDataSourceのデータを取得
+        const y5 = y_axis3.value; // セレクトボックスの値を取得
+        data['y5'] = data[y5]; // y軸の値を更新
+        source_ems.change.emit(); // ColumnDataSourceを更新
     """)
     select_ems.js_on_change('value',callback_ems)
-
-    #3 EMS plots: RangeSliderの作成
     slider_ems = RangeSlider(title=" Adjust X-Axis range",start=-1e6,end=1e6,step=10,value=(-1e6, 1e6),width_policy="max")
     slider_ems.js_link("value", plot_ems.x_range, "start", attr_selector=0) 
     slider_ems.js_link("value", plot_ems.x_range, "end", attr_selector=1) 
@@ -323,11 +267,10 @@ def gene():
     slider_ems.bar_color = "cornflowerblue" 
 
     #4 MPRA plots
-    def create_plot(df, df_k562, df_hepg2, value): 
+    def create_plot(df, df_k562, df_hepg2, value):
         source_mpra = ColumnDataSource(df) 
         colors = factor_cmap('Tier', palette=['#BEE026', '#21918D', '#7F7F7F'], factors=['Tier 1', 'Tier 2', 'None'])
         
-        #4 MPRA plots
         plot_mpra = figure(width=1080, height=220,y_axis_label="Log2(Alt/Ref)",x_axis_label=f'Distance to TSS of {gene_name}',tools=[hover_mpra, ResetTool(),SaveTool()],x_range=([-1e6, 1e6]),y_range = [-3, 3])
         plot_mpra.circle('tss_distance', 'alpha_diff', fill_alpha=0.5, size=14, source=source_mpra, color=colors, legend_field='Tier')
         plot_mpra.yaxis.axis_label_text_font_size = "14pt" 
@@ -337,7 +280,6 @@ def gene():
         
         select_mpra = Select(options=['Expression Fold Change(K562)', 'Expression Fold Change(HepG2)'], value=value)
         
-        #4 MPRA plots:カスタムJSコードを定義
         callback_code = """
             var selected_value = cb_obj.value;
             var data = source_mpra.data;
@@ -404,6 +346,7 @@ def download_page():
 @app.route('/about')
 def about_page():
     return render_template('about.html')
+s
 
 if __name__ == "__main__":
     app.run(debug=True)
